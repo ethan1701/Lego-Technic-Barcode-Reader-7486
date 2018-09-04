@@ -13,6 +13,61 @@
 			var playPromise;
 			var bars = [];
 			
+			const types =
+			["Select Type","Tone", "Sound", "Sound & Motor", "Motor","Pre-Programmed"];
+			
+			const speeds = new Map([
+			["SPEED", []],
+			["20",		[_begin,_1,_0,_1,_1,_1,_1,_1,_1,_0,_0,_end]],
+			["40",		[_begin,_1,_0,_0,_1,_1,_1,_1,_1,_0,_1,_end]],
+			["60",		[_begin,_0,_1,_1,_1,_1,_1,_1,_1,_1,_0,_end]],
+			["Varying",	[_begin,_0,_1,_0,_1,_1,_1,_1,_1,_1,_1,_end]]
+			]);
+			
+			const motor = new Map([
+			["MOTOR DIRECTION", []],
+			["↩️",			[_begin,_1,_1,_1,_0,_0,_0,_0,_0,_0,_0,_end]],
+			["🛑",			[_begin,_0,_1,_1,_0,_0,_0,_1,_0,_1,_0,_end]],
+			["↪️",			[_begin,_1,_1,_0,_0,_0,_0,_0,_0,_0,_1,_end]]
+			]);
+			
+			const tones = new Map([
+			["TONE",[]],
+			["🎵 C",			[_begin,_1,_1,_0,_1,_1,_0,_0,_0,_1,_1,_end]],
+			["🎵 C#",		[_begin,_1,_0,_0,_1,_1,_0,_0,_1,_0,_0,_end]],
+			["🎵 D",			[_begin,_0,_1,_1,_1,_1,_0,_0,_1,_0,_1,_end]],
+			["🎵 D#",		[_begin,_0,_1,_0,_1,_1,_0,_0,_1,_1,_0,_end]],
+			["🎵 E",			[_begin,_0,_0,_1,_1,_1,_0,_0,_1,_1,_1,_end]],
+			["🎵 F",			[_begin,_1,_1,_1,_1,_1,_0,_1,_0,_0,_0,_end]],
+			["🎵 F#",		[_begin,_1,_1,_0,_1,_1,_0,_1,_0,_0,_1,_end]],
+			["🎵 G",			[_begin,_1,_0,_1,_1,_1,_0,_1,_0,_1,_0,_end]],
+			["🎵 G#",		[_begin,_1,_0,_0,_1,_1,_0,_1,_0,_1,_1,_end]],
+			["🎵 A",			[_begin,_0,_1,_0,_1,_1,_0,_1,_1,_0,_0,_end]],
+			["🎵 A#",		[_begin,_0,_0,_1,_1,_1,_0,_1,_1,_0,_1,_end]],
+			["🎵 B/H",		[_begin,_0,_0,_0,_1,_1,_0,_1,_1,_1,_0,_end]],
+			["🎵 C.",		[_begin,_1,_1,_1,_1,_1,_0,_1,_1,_1,_1,_end]]
+			]);
+			
+			const sounds = new Map([
+			["SOUND",[]],
+			["🔈 🚚",			[_begin,_0,_0,_0,_0,_0,_0,_0,_1,_1,_0,_end]],
+			["🔈 🚁",			[_begin,_0,_0,_1,_0,_0,_0,_0,_1,_0,_1,_end]],
+			["🔈 🤖",			[_begin,_1,_1,_1,_0,_0,_0,_0,_1,_1,_1,_end]],
+			["🔈 ⚙️",			[_begin,_1,_0,_1,_0,_0,_0,_1,_0,_0,_0,_end]],
+			["🔈 Air-break",	[_begin,_0,_1,_0,_0,_0,_0,_0,_1,_0,_0,_end]],
+			["🔈 🔇",			[_begin,_1,_0,_0,_0,_0,_0,_1,_0,_0,_1,_end]]
+			]);
+			
+			const sensor = new Map([
+			["Sensor Status", []],
+			["Pressed",		[_begin,_0,_0,_1,_1,_1,_0,_0,_0,_0,_0,_end]],
+			["Released",	[_begin,_0,_0,_0,_1,_1,_0,_0,_0,_0,_1,_end]]
+			]);
+			
+			const ampersand = new Map([
+			["&",			[_begin,_0,_1,_0,_0,_0,_0,_1,_0,_1,_1,_end]]
+			]);
+			
 			const barcodes =
 			{
 			Select:			[_begin,_0,_0,_0,_0,_0,_0,_0,_0,_0,_0,_end],
@@ -69,14 +124,113 @@
 				[].forEach.call(lists, function (list){
 					listOptions(list);
 				});
+				
+				var types =  document.getElementsByClassName("types");
+				[].forEach.call(types, function (type){
+					typeOptions(type);
+				});
 			}
 			
 			function listOptions(obj){
-				var inner="";
 				Object.keys(barcodes).forEach(function(key,index) {
-					inner += "<option value='"+ key + "'>" + key + "</option>";
+					obj.innerHTML += "<option value='"+ key + "'>" + key + "</option>";
 				});
-				obj.innerHTML = inner;
+			}
+			
+			function typeOptions(obj){
+				types.forEach(function(type){
+					obj.innerHTML += "<option value='"+ type + "'>" + type + "</option>";
+				});
+			}
+			
+			function showNextLevel(obj){
+				var row = obj.parentNode
+				var selected;
+				var i = 0;
+				while (row.lastChild != obj){
+					row.removeChild(row.lastChild);
+				}
+				var toneSelect = document.createElement("select");
+				toneSelect.setAttribute("class", "option tone");
+				tones.forEach(function(value,index) {
+					if (i==0){selected =" selected";}else{selected="";}
+					toneSelect.innerHTML += "<option value='"+ value + "'" + selected + ">" + index + "</option>";
+					i++;
+				});
+				
+				i=0;
+				var SoundSelect = document.createElement("select");
+				SoundSelect.setAttribute("class", "option sound");
+				sounds.forEach(function(value,index) {
+					if (i==0){selected =" selected";}else{selected="";}
+					SoundSelect.innerHTML += "<option value='"+ value + "'" + selected + ">" + index + "</option>";
+					i++;
+				});
+
+				i=0;
+				var MotorSelect = document.createElement("select");
+				MotorSelect.setAttribute("class", "option motor");
+				motor.forEach(function(value,index) {
+					if (i==0){selected =" selected";}else{selected="";}
+					MotorSelect.innerHTML += "<option value='"+ value + "'" + selected + ">" + index + "</option>";
+					i++;
+				});
+
+				i=0;
+				var SpeedSelect = document.createElement("select");
+				SpeedSelect.setAttribute("class", "option speed");
+				speeds.forEach(function(value,index) {
+					if (i==0){selected =" selected";}else{selected="";}
+					SpeedSelect.innerHTML += "<option value='"+ value + "'" + selected + ">" + index + "</option>";
+					i++;
+				});
+				
+				var andSpan = document.createElement("span");
+				andSpan.setAttribute("class", "option and");
+				andSpan.setAttribute("value", "[_begin,_0,_1,_0,_0,_0,_0,_1,_0,_1,_1,_end]");
+				
+				i=0;
+				var SensorSelect = document.createElement("select");
+				SensorSelect.setAttribute("class", "option sensor");
+				sensor.forEach(function(value,index) {
+					if (i==0){selected =" selected";}else{selected="";}
+					SensorSelect.innerHTML += "<option value='"+ value + "'" + selected + ">" + index + "</option>";
+					i++;
+				});
+				var SensorSelect1 = SensorSelect.cloneNode(true);
+				
+				var durationInput = document.createElement("input");
+				durationInput.setAttribute("class", "option duration");
+				durationInput.setAttribute("value", "Duration (seconds)");
+				
+				switch(obj.value){
+					case "Tone":
+						row.appendChild(toneSelect);
+						break;
+					case "Sound":
+						row.appendChild(SensorSelect);
+						row.appendChild(SoundSelect);
+						row.appendChild(SpeedSelect);
+						row.appendChild(durationInput);
+						row.appendChild(SensorSelect1);
+						break;
+					case "Sound & Motor":
+						row.appendChild(SensorSelect);
+						row.appendChild(SoundSelect);
+						row.appendChild(andSpan);
+						row.appendChild(MotorSelect);
+						row.appendChild(SpeedSelect);
+						row.appendChild(durationInput);
+						row.appendChild(SensorSelect1);
+						break;
+					case "Motor":
+						row.appendChild(SensorSelect);
+						row.appendChild(MotorSelect);
+						row.appendChild(SpeedSelect);
+						row.appendChild(durationInput);
+						row.appendChild(SensorSelect1);
+						break;
+				}
 			}
 			
 			function PrintBarcode(instruction){
@@ -93,23 +247,34 @@
 				document.getElementById("instructions").append(instruction);
 			}
 			
-			function makeItPlay(){
-				var instructions = document.getElementsByClassName("barcodePrint");
-				[].forEach.call(instructions,function (instruction){
-//					console.log(instruction.innerText);
-					var currentBarcode = instruction.innerText.toString();
-					for (var i = 0; i < currentBarcode.length; i++){
-						var currentChar = currentBarcode.charAt(i);
-						console.log(currentChar);
-						if (currentChar != "█"){
-							bars.push(["white",timeunit]);
-						} else if (currentChar == "█"){
-							bars.push(["black",timeunit]);
+			async function makeItPlay(){
+				var instructions = document.getElementsByClassName("option");
+				var indicator = document.getElementById("indicator");
+				[].forEach.call(instructions,async function (instruction){
+					console.log(instruction.value);
+					if(instruction.value != "undefined"){
+						instruction.style.backgroundColor="yellow";
+						var currentBarcode = instruction.value.toString();
+						for (var i = 0; i < currentBarcode.length; i++){
+							var currentChar = currentBarcode.charAt(i);
+							console.log(currentChar);
+							if (currentChar != "█"){
+								bars.push(["white",timeunit]);
+								indicator.style.background = "white";
+								play(0);
+							} else if (currentChar == "█"){
+								bars.push(["black",timeunit]);
+								indicator.style.background = "black";
+								stop(0);
+							}
+							await sleep(timeunit);
 						}
+						instruction.style.backgroundColor="white";
 					}
 					bars.push(["white",timegap]);
+					await sleep(timegap);
 				});
-				playBars();
+//				playBars();
 			}
 			
 			async function playBars(){
@@ -181,12 +346,14 @@
 	<body onload="populateLists()">
 		<div id="background"></div>
 		<div id="wrapper">
+			
 			<div class="instructions" id="instructions">
 				<div class="instruction">
-					<select class="barcodeList"onchange="PrintBarcode(this)">
-					</select>
-					<span class="barcodePrint"></span>
 					<button onclick="remove(this)">(Delete)</button>
+					<select class="types" onchange="showNextLevel(this)"></select>
+					<!--select class="barcodeList"onchange="PrintBarcode(this)">
+					</select>
+					<span class="barcodePrint"></span-->
 				</div>
 			</div>
 			<button onclick="addInstruction()">Add another</button>
