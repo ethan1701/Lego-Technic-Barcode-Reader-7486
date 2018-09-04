@@ -188,6 +188,8 @@
 				var andSpan = document.createElement("span");
 				andSpan.setAttribute("class", "option and");
 				andSpan.setAttribute("value", "[_begin,_0,_1,_0,_0,_0,_0,_1,_0,_1,_1,_end]");
+				var amp = document.createTextNode("&");
+				andSpan.appendChild(amp);
 				
 				i=0;
 				var SensorSelect = document.createElement("select");
@@ -247,45 +249,38 @@
 				document.getElementById("instructions").append(instruction);
 			}
 			
-			async function makeItPlay(){
+			function makeItPlay(){
 				var instructions = document.getElementsByClassName("option");
-				var indicator = document.getElementById("indicator");
-				[].forEach.call(instructions,async function (instruction){
+				[].forEach.call(instructions,function (instruction){
 					console.log(instruction.value);
 					if(instruction.value != "undefined"){
-						instruction.style.backgroundColor="yellow";
 						var currentBarcode = instruction.value.toString();
 						for (var i = 0; i < currentBarcode.length; i++){
 							var currentChar = currentBarcode.charAt(i);
-							console.log(currentChar);
 							if (currentChar != "█"){
-								bars.push(["white",timeunit]);
-								indicator.style.background = "white";
-								play(0);
+								bars.push(["white",timeunit,instruction]);
 							} else if (currentChar == "█"){
-								bars.push(["black",timeunit]);
-								indicator.style.background = "black";
-								stop(0);
+								bars.push(["black",timeunit,instruction]);
 							}
-							await sleep(timeunit);
 						}
-						instruction.style.backgroundColor="white";
 					}
-					bars.push(["white",timegap]);
-					await sleep(timegap);
+					bars.push(["white",timegap,instruction]);
 				});
-//				playBars();
+				playBars();
+				console.log(bars);
 			}
 			
 			async function playBars(){
 				var indicator = document.getElementById("indicator");
 				for(var i = 0; i < bars.length; i++){
+					bars[i][2].style.background="yellow";
 					indicator.style.background = bars[i][0];
 					if(bars[i][0] == "white"){
 						play(0);
 					} else if(bars[i][0] == "black"){
 						stop(0);
 					}
+					bars[i][2].style.background="white";
 					await sleep(bars[i][1]);
 				}
 				bars=[];
@@ -359,6 +354,9 @@
 			<button onclick="addInstruction()">Add another</button>
 			<button onclick="makeItPlay()">Play</button>
 			<div class="indicator" id = "indicator">Place Scanner Here</div>
+		<div class = "footer">
+			for full user instructions, see <a href="https://onedrive.live.com/?cid=5641CCE2A1CC0886&id=5641CCE2A1CC0886%21264&parId=5641CCE2A1CC0886%21263&o=OneUp" target="">here</a>.
+		</div>
 		</div>
 	</body>
 </html>
