@@ -1,0 +1,197 @@
+<html>
+	<head>
+		<script>
+			const audio = new Audio('http://soundbible.com/mp3/Buzz-SoundBible.com-1790490578.mp3');
+			const timeunit=50;
+			const timegap=1000;
+
+			const _0 = "&nbsp;█&nbsp;";
+			const _1 = "██&nbsp;";
+			const _begin = "█&nbsp;";
+			const _end = "███";
+			
+			var playPromise;
+			var bars = [];
+			
+			const barcodes =
+			{
+			Select:			[_begin,_0,_0,_0,_0,_0,_0,_0,_0,_0,_0,_end],
+			"Sensor-in":	[_begin,_0,_0,_1,_1,_1,_0,_0,_0,_0,_0,_end],
+			"Sensor-out":	[_begin,_0,_0,_0,_1,_1,_0,_0,_0,_0,_1,_end],
+			"↩️":			[_begin,_1,_1,_1,_0,_0,_0,_0,_0,_0,_0,_end],
+			"🛑":			[_begin,_0,_1,_1,_0,_0,_0,_1,_0,_1,_0,_end],
+			"↪️":			[_begin,_1,_1,_0,_0,_0,_0,_0,_0,_0,_1,_end],
+			"&":			[_begin,_0,_1,_0,_0,_0,_0,_1,_0,_1,_1,_end],
+			"🔈 🚚":			[_begin,_0,_0,_0,_0,_0,_0,_0,_1,_1,_0,_end],
+			"🔈 🚁":			[_begin,_0,_0,_1,_0,_0,_0,_0,_1,_0,_1,_end],
+			"🔈 🤖":			[_begin,_1,_1,_1,_0,_0,_0,_0,_1,_1,_1,_end],
+			"🔈 ⚙️":			[_begin,_1,_0,_1,_0,_0,_0,_1,_0,_0,_0,_end],
+			"🔈 Air-break":	[_begin,_0,_1,_0,_0,_0,_0,_0,_1,_0,_0,_end],
+			"🔈 🔇":			[_begin,_1,_0,_0,_0,_0,_0,_1,_0,_0,_1,_end],
+			"⌚ 1 Sec.":		[_begin,_0,_1,_1,_1,_1,_1,_0,_0,_0,_1,_end],
+			"⌚ 2 Sec.":		[_begin,_0,_1,_0,_1,_1,_1,_0,_0,_1,_0,_end],
+			"⌚ 3 Sec.":		[_begin,_0,_0,_1,_1,_1,_1,_0,_0,_1,_1,_end],
+			"⌚ 4 Sec.":		[_begin,_1,_1,_1,_1,_1,_1,_0,_1,_0,_0,_end],
+			"⌚ 5 Sec.":		[_begin,_1,_1,_0,_1,_1,_1,_0,_1,_0,_1,_end],
+			"⌚ 6 Sec.":		[_begin,_1,_0,_1,_1,_1,_1,_0,_1,_1,_0,_end],
+			"⌚ 7 Sec.":		[_begin,_1,_0,_0,_1,_1,_1,_0,_1,_1,_1,_end],
+			"⌚ 8 Sec.":		[_begin,_0,_1,_0,_1,_1,_1,_1,_0,_0,_0,_end],
+			"⌚ 9 Sec.":		[_begin,_0,_0,_1,_1,_1,_1,_1,_0,_0,_1,_end],
+			"⌚ 0 Sec.":		[_begin,_1,_0,_0,_1,_1,_1,_0,_0,_0,_0,_end],
+			"⌚ .":			[_begin,_0,_0,_0,_1,_1,_1,_1,_0,_1,_0,_end],
+			"⌚ 🎲 Sec.":	[_begin,_1,_1,_1,_1,_1,_1,_1,_0,_1,_1,_end],
+			"Speed: 20":	[_begin,_1,_0,_1,_1,_1,_1,_1,_1,_0,_0,_end],
+			"Speed: 40":	[_begin,_1,_0,_0,_1,_1,_1,_1,_1,_0,_1,_end],
+			"Speed: 60":	[_begin,_0,_1,_1,_1,_1,_1,_1,_1,_1,_0,_end],
+			"Speed: Cog?!":	[_begin,_0,_1,_0,_1,_1,_1,_1,_1,_1,_1,_end],
+			"🎵 C":			[_begin,_1,_1,_0,_1,_1,_0,_0,_0,_1,_1,_end],
+			"🎵 C#":			[_begin,_1,_0,_0,_1,_1,_0,_0,_1,_0,_0,_end],
+			"🎵 D":			[_begin,_0,_1,_1,_1,_1,_0,_0,_1,_0,_1,_end],
+			"🎵 D#":			[_begin,_0,_1,_0,_1,_1,_0,_0,_1,_1,_0,_end],
+			"🎵 E":			[_begin,_0,_0,_1,_1,_1,_0,_0,_1,_1,_1,_end],
+			"🎵 F":			[_begin,_1,_1,_1,_1,_1,_0,_1,_0,_0,_0,_end],
+			"🎵 F#":			[_begin,_1,_1,_0,_1,_1,_0,_1,_0,_0,_1,_end],
+			"🎵 G":			[_begin,_1,_0,_1,_1,_1,_0,_1,_0,_1,_0,_end],
+			"🎵 G#":			[_begin,_1,_0,_0,_1,_1,_0,_1,_0,_1,_1,_end],
+			"🎵 A":			[_begin,_0,_1,_0,_1,_1,_0,_1,_1,_0,_0,_end],
+			"🎵 A#":			[_begin,_0,_0,_1,_1,_1,_0,_1,_1,_0,_1,_end],
+			"🎵 B/H":			[_begin,_0,_0,_0,_1,_1,_0,_1,_1,_1,_0,_end],
+			"🎵 C":			[_begin,_1,_1,_1,_1,_1,_0,_1,_1,_1,_1,_end]
+			};
+			
+			
+			function sleep(ms) {
+				return new Promise(resolve => setTimeout(resolve, ms));
+			}
+
+			function populateLists(){
+				var lists = document.getElementsByClassName("barcodeList");
+				[].forEach.call(lists, function (list){
+					listOptions(list);
+				});
+			}
+			
+			function listOptions(obj){
+				var inner="";
+				Object.keys(barcodes).forEach(function(key,index) {
+					inner += "<option value='"+ key + "'>" + key + "</option>";
+				});
+				obj.innerHTML = inner;
+			}
+			
+			function PrintBarcode(instruction){
+				instruction.parentNode.getElementsByClassName("barcodePrint")[0].innerHTML = barcodes[instruction.value].join("");
+			}
+			
+			function remove(barcode){
+				console.log(barcode);
+				barcode.parentNode.parentNode.removeChild(barcode.parentNode);
+			}
+			
+			function addInstruction(){
+				var instruction = document.getElementsByClassName("instruction")[0].cloneNode(true);
+				document.getElementById("instructions").append(instruction);
+			}
+			
+			function makeItPlay(){
+				var instructions = document.getElementsByClassName("barcodePrint");
+				[].forEach.call(instructions,function (instruction){
+//					console.log(instruction.innerText);
+					var currentBarcode = instruction.innerText.toString();
+					for (var i = 0; i < currentBarcode.length; i++){
+						var currentChar = currentBarcode.charAt(i);
+						console.log(currentChar);
+						if (currentChar != "█"){
+							bars.push(["white",timeunit]);
+						} else if (currentChar == "█"){
+							bars.push(["black",timeunit]);
+						}
+					}
+					bars.push(["white",timegap]);
+				});
+				playBars();
+			}
+			
+			async function playBars(){
+				var indicator = document.getElementById("indicator");
+				for(var i = 0; i < bars.length; i++){
+					indicator.style.background = bars[i][0];
+					if(bars[i][0] == "white"){
+						play(0);
+					} else if(bars[i][0] == "black"){
+						stop(0);
+					}
+					await sleep(bars[i][1]);
+				}
+				bars=[];
+			}
+			
+			function play() {
+				playPromise = audio.play();
+			}
+			
+			function stop(){
+				document.body.style.backgroundColor="#fff";
+				if (playPromise !== undefined) {
+					playPromise.then(_ => {
+						audio.pause();
+						audio.currentTime = 0;
+					})
+				}
+			}
+		</script>
+		<style>
+			#background{
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-image: url("https://thelegocarblog.files.wordpress.com/2013/08/221.jpg");
+				background-repeat: no-repeat;
+				background-attachment: fixed;
+				background-size: 100%;
+				opacity: 0.4;
+				filter:alpha(opacity=40);
+			}
+			
+			#wrapper {
+				position: relative;
+				padding-top: 16px;
+				padding-left:51px;
+			}
+			.barcode{
+				height:30px;
+				}
+			
+			.barcodePrint{
+				font-family: monospace;
+				border:1px solid black;
+				background-color: #fff;
+			}
+			
+			#indicator{
+				width:100px;
+				height: 100px;
+				border:1px solid black;
+				background-color: #fff;
+			}
+		</style>
+	</head>
+	<body onload="populateLists()">
+		<div id="background"></div>
+		<div id="wrapper">
+			<div class="instructions" id="instructions">
+				<div class="instruction">
+					<select class="barcodeList"onchange="PrintBarcode(this)">
+					</select>
+					<span class="barcodePrint"></span>
+					<button onclick="remove(this)">(Delete)</button>
+				</div>
+			</div>
+			<button onclick="addInstruction()">Add another</button>
+			<button onclick="makeItPlay()">Play</button>
+			<div class="indicator" id = "indicator">Place Scanner Here</div>
+		</div>
+	</body>
+</html>
