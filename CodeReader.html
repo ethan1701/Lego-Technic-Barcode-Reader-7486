@@ -5,16 +5,16 @@
 			const timeunit=50;
 			const timegap=1000;
 
-			const _0 = "&nbsp;█&nbsp;";
-			const _1 = "██&nbsp;";
-			const _begin = "█&nbsp;";
-			const _end = "███";
+			const _0 = "_█_";
+			const _1 = "██_";
+			const _begin = "__█_";
+			const _end = "███_______";
 			
 			var playPromise;
 			var bars = [];
 			
 			const types =
-			["Select Type","Tone", "Sound", "Sound & Motor", "Motor","Pre-Programmed"];
+			["Select Type","Tone", "Sound", "Sound & Motor", "Motor","Sensor"]; // add "Pre-Programmed"?
 			
 			const speeds = new Map([
 			["SPEED", []],
@@ -64,8 +64,20 @@
 			["Released",	[_begin,_0,_0,_0,_1,_1,_0,_0,_0,_0,_1,_end]]
 			]);
 			
-			const ampersand = new Map([
-			["&",			[_begin,_0,_1,_0,_0,_0,_0,_1,_0,_1,_1,_end]]
+			const ampersand =[_begin,_0,_1,_0,_0,_0,_0,_1,_0,_1,_1,_end];
+			
+			const durations = new Map([
+			["1",		[_begin,_0,_1,_1,_1,_1,_1,_0,_0,_0,_1,_end]],
+			["2",		[_begin,_0,_1,_0,_1,_1,_1,_0,_0,_1,_0,_end]],
+			["3",		[_begin,_0,_0,_1,_1,_1,_1,_0,_0,_1,_1,_end]],
+			["4",		[_begin,_1,_1,_1,_1,_1,_1,_0,_1,_0,_0,_end]],
+			["5",		[_begin,_1,_1,_0,_1,_1,_1,_0,_1,_0,_1,_end]],
+			["6",		[_begin,_1,_0,_1,_1,_1,_1,_0,_1,_1,_0,_end]],
+			["7",		[_begin,_1,_0,_0,_1,_1,_1,_0,_1,_1,_1,_end]],
+			["8",		[_begin,_0,_1,_0,_1,_1,_1,_1,_0,_0,_0,_end]],
+			["9",		[_begin,_0,_0,_1,_1,_1,_1,_1,_0,_0,_1,_end]],
+			["0",		[_begin,_1,_0,_0,_1,_1,_1,_0,_0,_0,_0,_end]],
+			[".",		[_begin,_0,_0,_0,_1,_1,_1,_1,_0,_1,_0,_end]]
 			]);
 			
 			const barcodes =
@@ -186,8 +198,9 @@
 				});
 				
 				var andSpan = document.createElement("span");
-				andSpan.setAttribute("class", "option and");
-				andSpan.setAttribute("value", "[_begin,_0,_1,_0,_0,_0,_0,_1,_0,_1,_1,_end]");
+				andSpan.setAttribute("class", "andContainer");
+				andSpan.innerHTML = "<input class='option amp' value='" + ampersand.join('') + "'/>";
+				andSpan.setAttribute("value", ampersand.join(''));
 				var amp = document.createTextNode("&");
 				andSpan.appendChild(amp);
 				
@@ -199,54 +212,74 @@
 					SensorSelect.innerHTML += "<option value='"+ value + "'" + selected + ">" + index + "</option>";
 					i++;
 				});
-				var SensorSelect1 = SensorSelect.cloneNode(true);
 				
-				var durationInput = document.createElement("input");
-				durationInput.setAttribute("class", "option duration");
-				durationInput.setAttribute("value", "Duration (seconds)");
+				var durationSpan =  document.createElement("span");
+				durationSpan.setAttribute("class", "durationContainer");
+				durationSpan.innerHTML="<input class='duration display' value='Duration' onChange='parseDuration(this);'/><input class='option duration' value=''/><button class='random' onclick = 'randomize(this);parseDuration(this.parentNode.firstChild)' title='Random Duration'>🎲</button>"
 				
 				switch(obj.value){
 					case "Tone":
 						row.appendChild(toneSelect);
 						break;
 					case "Sound":
-						row.appendChild(SensorSelect);
 						row.appendChild(SoundSelect);
 						row.appendChild(SpeedSelect);
-						row.appendChild(durationInput);
-						row.appendChild(SensorSelect1);
+						row.appendChild(durationSpan);
 						break;
 					case "Sound & Motor":
-						row.appendChild(SensorSelect);
 						row.appendChild(SoundSelect);
 						row.appendChild(andSpan);
 						row.appendChild(MotorSelect);
 						row.appendChild(SpeedSelect);
-						row.appendChild(durationInput);
-						row.appendChild(SensorSelect1);
+						row.appendChild(durationSpan);
 						break;
 					case "Motor":
-						row.appendChild(SensorSelect);
 						row.appendChild(MotorSelect);
 						row.appendChild(SpeedSelect);
-						row.appendChild(durationInput);
-						row.appendChild(SensorSelect1);
+						row.appendChild(durationSpan);
+						break;
+					case "Sensor":
+						row.appendChild(SensorSelect);
 						break;
 				}
 			}
 			
+			function randomize(duration){
+				duration.parentNode.getElementsByClassName("duration")[0].value = Math.round(Math.random()*1000)/10;
+			}
+			
+			function parseDuration(duration){
+				var durationString = duration.value.toString();
+				console.log(durationString);
+				var DurationInput = duration.nextSibling;
+				DurationInput.value = '';
+				for (var i = 0; i < durationString.length; i++){
+					if(durations.get(durationString[i]) != "undefined"){
+						DurationInput.value += durations.get(durationString[i]).join('');
+					}
+				}
+			}
+			
 			function PrintBarcode(instruction){
-				instruction.parentNode.getElementsByClassName("barcodePrint")[0].innerHTML = barcodes[instruction.value].join("");
+				instruction.parentNode.getElementsByClassName("barcodePrint")[0].innerHTML = barcodes[instruction.value].join('');
 			}
 			
 			function remove(barcode){
 				console.log(barcode);
 				barcode.parentNode.parentNode.removeChild(barcode.parentNode);
+				var deleteButtons = document.getElementsByClassName("delete");
+				if(deleteButtons.length==1){
+					deleteButtons[0].disabled = true;
+				}
 			}
 			
 			function addInstruction(){
 				var instruction = document.getElementsByClassName("instruction")[0].cloneNode(true);
 				document.getElementById("instructions").append(instruction);
+				var deleteButtons = document.getElementsByClassName("delete");
+				[].forEach.call(deleteButtons, function (deleteButton){
+					deleteButton.disabled = false;
+				});
 			}
 			
 			function makeItPlay(){
@@ -258,13 +291,13 @@
 						for (var i = 0; i < currentBarcode.length; i++){
 							var currentChar = currentBarcode.charAt(i);
 							if (currentChar != "█"){
-								bars.push(["white",timeunit,instruction]);
+								bars.push(["red",timeunit,instruction]);
 							} else if (currentChar == "█"){
 								bars.push(["black",timeunit,instruction]);
 							}
 						}
 					}
-					bars.push(["white",timegap,instruction]);
+					bars.push(["black",timegap,instruction]);
 				});
 				playBars();
 				console.log(bars);
@@ -330,11 +363,36 @@
 				background-color: #fff;
 			}
 			
+			.durationContainer{
+				position: relative;
+			}
+			
+			.durationContainer .duration{
+				position: absolute;
+				width:60px;
+				top: 0px;
+			}
+			
+			.durationContainer .display{
+				background: transparent;
+			}
+			
+			.duration.option{
+				z-index:-1;
+				color:#fff;
+			}
+			
+			.random{
+				position: relative;
+				left:62px;
+			}
+			
 			#indicator{
 				width:100px;
 				height: 100px;
 				border:1px solid black;
-				background-color: #fff;
+				background-color: #000;
+				color:#fff;
 			}
 		</style>
 	</head>
@@ -344,7 +402,7 @@
 			
 			<div class="instructions" id="instructions">
 				<div class="instruction">
-					<button onclick="remove(this)">(Delete)</button>
+					<button onclick="remove(this)" class="delete" disabled>Delete</button>
 					<select class="types" onchange="showNextLevel(this)"></select>
 					<!--select class="barcodeList"onchange="PrintBarcode(this)">
 					</select>
